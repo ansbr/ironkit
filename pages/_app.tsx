@@ -5,15 +5,15 @@ import '@rainbow-me/rainbowkit/styles.css';
 import type { AppProps } from 'next/app';
 import {
   RainbowKitProvider,
-  getDefaultWallets,
   connectorsForWallets,
   createAuthenticationAdapter,
   RainbowKitAuthenticationProvider,
   AuthenticationStatus,
-  Wallet
+  Wallet,
+  darkTheme
 } from '@rainbow-me/rainbowkit';
 import {
-  argentWallet,
+  metaMaskWallet,
   trustWallet,
   ledgerWallet,
 } from '@rainbow-me/rainbowkit/wallets';
@@ -36,42 +36,29 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
 
-const { wallets } = getDefaultWallets({
-  appName: 'RainbowKit demo',
-  projectId,
-  chains,
-});
-
-const demoAppInfo = {
-  appName: 'Rainbowkit Demo',
-};
-
-const roninConnector = new RoninConnector({
-  chains: [saigon, ronin],
-  options: {
-    projectId
-  }
-})
-
-const roninWallet = (): Wallet => ({
+const roninWallet = ({ projectId }: { projectId: string }): Wallet => ({
   id: 'ronin',
   name: 'Ronin',
-  iconUrl: 'https://wallet.roninchain.com/favicon.ico',
-  iconBackground: '#4e98fa',
+  iconUrl: 'https://docs.skymavis.com/img/ronin.svg',
+  iconBackground: '#004de5',
   createConnector: () => {
     return {
-      connector: roninConnector
+      connector: new RoninConnector({
+        chains: [ronin, saigon],
+        options: {
+          projectId
+        }
+      })
     }
   }
 })
 
 const connectors = connectorsForWallets([
-  ...wallets,
   {
-    groupName: 'Other',
+    groupName: 'Popular',
     wallets: [
-      roninWallet(),
-      argentWallet({ projectId, chains }),
+      metaMaskWallet({ projectId, chains }),
+      roninWallet({ projectId }),
       trustWallet({ projectId, chains }),
       ledgerWallet({ projectId, chains }),
     ],
@@ -120,6 +107,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
+      
       getNonce: async () => {
         const response = await fetch('/api/nonce');
         return await response.text();
@@ -127,18 +115,19 @@ export default function App({ Component, pageProps }: AppProps) {
 
       createMessage: ({ nonce, address, chainId }) => {
         return new SiweMessage({
-          domain: window.location.host,
+          domain: window.location.hostname,
           address,
-          statement: 'Sign in with Ethereum to the app.',
           uri: window.location.origin,
           version: '1',
           chainId,
           nonce,
+          statement: 'Sign in with Ethereum to the app.',
         });
       },
 
       getMessageBody: ({ message }) => {
-        return message.prepareMessage();
+        const msg = message.prepareMessage();
+        return msg;
       },
 
       verify: async ({ message, signature }) => {
@@ -178,7 +167,7 @@ export default function App({ Component, pageProps }: AppProps) {
         adapter={authAdapter}
         status={authStatus}
       >
-        <RainbowKitProvider appInfo={demoAppInfo} chains={chains}>
+        <RainbowKitProvider chains={chains} theme={darkTheme()}>
           <Component {...pageProps} />
         </RainbowKitProvider>
       </RainbowKitAuthenticationProvider>
