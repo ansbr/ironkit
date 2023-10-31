@@ -16,6 +16,9 @@ import {
   metaMaskWallet,
   trustWallet,
   ledgerWallet,
+  coinbaseWallet,
+  okxWallet,
+  bitgetWallet
 } from '@rainbow-me/rainbowkit/wallets';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
@@ -26,12 +29,14 @@ import { RoninConnector, ronin, saigon } from 'ronin-connector'
 import { publicProvider } from 'wagmi/providers/public';
 import { SiweMessage } from 'siwe';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AuthProvider } from 'context/AuthContext';
+import { AuthProvider } from 'components/context/AuthContext';
+
+const evmChains = process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [lineaTestnet] : [linea]
+const roninChains = process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [saigon] : [ronin]
+const chainList = [...evmChains, ...roninChains];
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [lineaTestnet] : [linea]),
-  ],
+  [...evmChains],
   [publicProvider()]
 );
 
@@ -45,7 +50,7 @@ const roninWallet = ({ projectId }: { projectId: string }): Wallet => ({
   createConnector: () => {
     return {
       connector: new RoninConnector({
-        chains: process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [saigon] : [ronin],
+        chains: roninChains,
         options: {
           projectId
         }
@@ -60,6 +65,9 @@ const connectors = connectorsForWallets([
     wallets: [
       metaMaskWallet({ projectId, chains }),
       roninWallet({ projectId }),
+      coinbaseWallet({ appName: 'Battlemon', chains }),
+      okxWallet({ projectId, chains }),
+      bitgetWallet({ projectId, chains }),
       trustWallet({ projectId, chains }),
       ledgerWallet({ projectId, chains }),
     ],
@@ -169,7 +177,7 @@ export default function App({ Component, pageProps }: AppProps) {
         status={authStatus}
       >
         <RainbowKitProvider chains={chains} theme={darkTheme()}>
-          <AuthProvider status={authStatus}>
+          <AuthProvider status={authStatus} chains={chainList}>
             <Component {...pageProps} />
           </AuthProvider>
         </RainbowKitProvider>

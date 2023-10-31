@@ -1,16 +1,17 @@
 import { AuthenticationStatus } from "@rainbow-me/rainbowkit";
 import { PropsWithChildren, createContext, useContext, useEffect, useState } from "react";
+import { Chain, useNetwork } from 'wagmi';
 
 // define the props
 type AuthState = {
-  status: AuthenticationStatus;
   isSignedIn: boolean;
+  isSupportedChain: boolean;
 };
 
 // 1. create a context with ThemeState and initialize it to null
 export const AuthContext = createContext<AuthState>({
-  status: 'unauthenticated',
-  isSignedIn: false
+  isSignedIn: false,
+  isSupportedChain: true
 });
 
 const useAuth = (): AuthState => {
@@ -27,17 +28,20 @@ const useAuth = (): AuthState => {
 
 type AuthProviderProps = {
   status: AuthenticationStatus;
+  chains: Chain[];
 } & PropsWithChildren;
 
-export const AuthProvider = ({ status, children }: AuthProviderProps) => {
+export const AuthProvider = ({ status, chains, children }: AuthProviderProps) => {
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
+  const { chain } = useNetwork()
+  const isSupportedChain = chain ? chains.map(chain => chain.id).includes(chain?.id) : false;
 
   useEffect(() => {
     setIsSignedIn(status === 'authenticated')
   }, [status])
 
   return (
-    <AuthContext.Provider value={{ status, isSignedIn }}>
+    <AuthContext.Provider value={{ isSignedIn, isSupportedChain }}>
       {children}
     </AuthContext.Provider>
   );

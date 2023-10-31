@@ -5,4 +5,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(180deg,#035161,#010024);
+  min-height: 100vh;
+}
+
+main {
+  font-size: 22px;
+  color: #fff;
 }
