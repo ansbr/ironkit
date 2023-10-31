@@ -26,6 +26,7 @@ import { RoninConnector, ronin, saigon } from 'ronin-connector'
 import { publicProvider } from 'wagmi/providers/public';
 import { SiweMessage } from 'siwe';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { AuthProvider } from 'context/AuthContext';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
@@ -44,7 +45,7 @@ const roninWallet = ({ projectId }: { projectId: string }): Wallet => ({
   createConnector: () => {
     return {
       connector: new RoninConnector({
-        chains: [ronin, saigon],
+        chains: process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [saigon] : [ronin],
         options: {
           projectId
         }
@@ -168,7 +169,9 @@ export default function App({ Component, pageProps }: AppProps) {
         status={authStatus}
       >
         <RainbowKitProvider chains={chains} theme={darkTheme()}>
-          <Component {...pageProps} />
+          <AuthProvider status={authStatus}>
+            <Component {...pageProps} />
+          </AuthProvider>
         </RainbowKitProvider>
       </RainbowKitAuthenticationProvider>
     </WagmiConfig>
