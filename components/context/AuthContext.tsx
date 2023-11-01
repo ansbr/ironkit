@@ -8,7 +8,7 @@ type AuthState = {
   isSupportedChain: boolean;
 };
 
-// 1. create a context with ThemeState and initialize it to null
+// 1. create a context with AuthState and initialize it to null
 export const AuthContext = createContext<AuthState>({
   isSignedIn: false,
   isSupportedChain: true
@@ -20,7 +20,7 @@ const useAuth = (): AuthState => {
 
   // 3. Make sure it's not null!
   if (!context) {
-    throw new Error("Please use ThemeProvider in parent component");
+    throw new Error("Please use AuthProvider in parent component");
   }
 
   return context;

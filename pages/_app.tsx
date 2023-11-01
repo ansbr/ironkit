@@ -99,7 +99,7 @@ export default function App({ Component, pageProps }: AppProps) {
       fetchingStatusRef.current = true;
 
       try {
-        const response = await fetch('/api/me');
+        const response = await fetch('/api/siwe/me');
         const json = await response.json();
         setAuthStatus(json.address ? 'authenticated' : 'unauthenticated');
       } catch (_error) {
@@ -121,7 +121,7 @@ export default function App({ Component, pageProps }: AppProps) {
     return createAuthenticationAdapter({
       
       getNonce: async () => {
-        const response = await fetch('/api/nonce');
+        const response = await fetch('/api/siwe/nonce');
         return await response.text();
       },
 
@@ -146,7 +146,7 @@ export default function App({ Component, pageProps }: AppProps) {
         verifyingRef.current = true;
 
         try {
-          const response = await fetch('/api/verify', {
+          const response = await fetch('/api/siwe/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message, signature }),
@@ -168,7 +168,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
       signOut: async () => {
         setAuthStatus('unauthenticated');
-        await fetch('/api/logout', {
+        await fetch('/api/siwe/logout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
