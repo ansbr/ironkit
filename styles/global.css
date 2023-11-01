@@ -9,6 +9,31 @@ body {
   min-height: 100vh;
 }
 
+.navbar-brand {
+  width: 130px;
+}
+
+@media (max-width: 991.98px) {
+  .navbar-brand, .navbar-toggler, .navbar-connectbutton {
+    width: auto;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .navbar-collapse {
+    background: #054658;
+    z-index: 1;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+  }    
+  .navbar-collapse ul {
+    padding: 70px 0 20px;
+  }  
+}
+
 .navbar-connectbutton button[data-testid="rk-connect-button"], 
 .navbar-connectbutton button[data-testid="rk-account-button"], 
 .navbar-connectbutton button[data-testid="rk-wrong-network-button"] {
