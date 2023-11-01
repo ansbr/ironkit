@@ -5,12 +5,16 @@ import { useOnMount } from "hooks/useOnMount";
 // define the props
 type DiscordState = {
   discordUser: string | undefined;
-  signInDiscord: () => void
+  isJoinedDiscord: boolean;
+  verifyJoinDiscord: () => void;
+  signInDiscord: () => void;
 };
 
 // 1. create a context with DiscordState and initialize it to null
 export const DiscordContext = createContext<DiscordState>({
   discordUser: undefined,
+  isJoinedDiscord: false,
+  verifyJoinDiscord: () => {},
   signInDiscord: () => {}
 });
 
@@ -30,7 +34,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 
 export const DiscordProvider = ({ children }: PropsWithChildren) => {
   const [discordUser, setDiscordUser] = useState<string>();
-  const [discordSession, setDiscordSession] = useState<Session>();
+  const [isJoinedDiscord, setIsJoinedDiscord] = useState<boolean>(false);
 
   const signInDiscord = async () => {
     await supabase.auth.signInWithOAuth({ 
@@ -41,27 +45,35 @@ export const DiscordProvider = ({ children }: PropsWithChildren) => {
     })
   }
 
+  const verifyJoinDiscord = async () => {
+    const { data } = await supabase.auth.getSession();
+    const access_token = data?.session?.access_token;
+    if (!access_token) return;
+
+    try {
+      const res = await fetch('/api/discord/verify',{
+        method: 'POST',
+        body: JSON.stringify({ access_token: access_token }),
+        headers: { 'content-type': 'application/json' }
+      })
+      if(res.ok){
+        const { data } = await res.json();
+        setIsJoinedDiscord(true)
+        console.log(data)
+      }else{
+        const { error } = await res.json();
+        console.log(error)
+      }
+    } catch (error) {
+        console.log(error)
+    }
+  }
+
   const getDiscordUser = async () => {
     const { data } = await supabase.auth.getSession();
     if (data?.session) {
       setDiscordUser(data?.session.user.user_metadata.full_name as string);
-      setDiscordSession(data?.session)
     }
-    
-
-    // try {
-    //   const res = await fetch('/api/discord/me')
-    //   if (res.ok) {
-    //     const { data } = await res.json();
-    //     setIsSignedInDiscord(true)
-    //     console.log(data)
-    //   } else {
-    //     const { error } = await res.json();
-    //     console.log(error)
-    //   }
-    // } catch (error) {
-    //     console.log(error)
-    // }
   }
 
   useOnMount(() => {
@@ -72,7 +84,7 @@ export const DiscordProvider = ({ children }: PropsWithChildren) => {
   })
 
   return (
-    <DiscordContext.Provider value={{ discordUser, signInDiscord }}>
+    <DiscordContext.Provider value={{ discordUser, signInDiscord, isJoinedDiscord, verifyJoinDiscord }}>
       {children}
     </DiscordContext.Provider>
   );

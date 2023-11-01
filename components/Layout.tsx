@@ -39,7 +39,6 @@ export default function Layout({ children }: PropsWithChildren) {
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
         justifyContent: 'flex-start',
         alignContent: 'stretch',
         alignItems: 'flex-start',
@@ -50,15 +49,13 @@ export default function Layout({ children }: PropsWithChildren) {
       <main style={{
         flex: '1 1 auto',
         alignSelf: 'center',
-        display: 'flex',
-        alignItems: 'center',
       }}>
         { isMounted && !isSignedIn && <>
-          <div className='text-white fs-5'>Please Sign In</div>
+          <div className='text-white fs-5 text-center'>Please Sign In</div>
         </>}
       
         { isMounted && isSignedIn && !isSupportedChain && <>
-          <div className='text-white fs-5'>Please Change Network</div>
+          <div className='text-white fs-5 text-center'>Please Change Network</div>
         </>}
 
         { isMounted && isSignedIn && isSupportedChain && children}
