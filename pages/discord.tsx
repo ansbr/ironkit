@@ -27,7 +27,7 @@ const Discord = () => {
           </li>
           <li className="list-group-item d-flex justify-content-between align-items-start">
             <div className="ms-2 me-auto">
-              <div className="fw-bold">Verify yourself</div>
+              <div className="fw-bold">Connect Battlemon Channel</div>
               Verification using on Battlemon Server
             </div>
             {<button className="btn btn-success btn-sm py-0" onClick={() => {}}>
