@@ -9,7 +9,43 @@ body {
   min-height: 100vh;
 }
 
-main {
-  font-size: 22px;
-  color: #fff;
+.navbar-connectbutton button[data-testid="rk-connect-button"], 
+.navbar-connectbutton button[data-testid="rk-account-button"], 
+.navbar-connectbutton button[data-testid="rk-wrong-network-button"] {
+  width: 145px;
+  text-align: center !important;
+  padding-left: 5px;
+  padding-right: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.navbar-connectbutton button[data-testid="rk-connect-button"],
+.navbar-connectbutton button[data-testid="rk-connect-button"] div ,
+.navbar-connectbutton button[data-testid="rk-account-button"], 
+.navbar-connectbutton button[data-testid="rk-account-button"] div {
+  border: none;
+  background: transparent;
+}
+.navbar-connectbutton button[data-testid="rk-account-button"],
+.navbar-connectbutton button[data-testid="rk-connect-button"] {
+  border: 1px solid #fff;
+}
+
+.navbar-connectbutton button[data-testid="rk-wrong-network-button"] {
+  width: auto;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.navbar-toggler {
+  border-color: #fff !important;
+  border-radius: 12px !important;
+}
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.1rem #fff !important;
+}
+.navbar-toggler .navbar-toggler-icon {
+  background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }

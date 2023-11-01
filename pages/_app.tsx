@@ -1,5 +1,6 @@
 // This example is based on the wagmi SIWE tutorial
 // https://wagmi.sh/examples/sign-in-with-ethereum
+import 'bootstrap/dist/css/bootstrap.css';
 import '../styles/global.css';
 import '@rainbow-me/rainbowkit/styles.css';
 import type { AppProps } from 'next/app';
@@ -65,7 +66,7 @@ const connectors = connectorsForWallets([
     wallets: [
       metaMaskWallet({ projectId, chains }),
       roninWallet({ projectId }),
-      coinbaseWallet({ appName: 'Battlemon', chains }),
+      coinbaseWallet({ appName: 'App', chains }),
       okxWallet({ projectId, chains }),
       bitgetWallet({ projectId, chains }),
       trustWallet({ projectId, chains }),
@@ -88,6 +89,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
   // Fetch user when:
   useEffect(() => {
+    typeof document !== undefined ? require("bootstrap/dist/js/bootstrap.bundle") : null;
+
     const fetchStatus = async () => {
       if (fetchingStatusRef.current || verifyingRef.current) {
         return;
@@ -176,7 +179,7 @@ export default function App({ Component, pageProps }: AppProps) {
         adapter={authAdapter}
         status={authStatus}
       >
-        <RainbowKitProvider chains={chains} theme={darkTheme()}>
+        <RainbowKitProvider chains={chains} theme={darkTheme()} locale={'en'}>
           <AuthProvider status={authStatus} chains={chainList}>
             <Component {...pageProps} />
           </AuthProvider>
