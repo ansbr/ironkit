@@ -57,14 +57,19 @@ export const DiscordProvider = ({ children }: PropsWithChildren) => {
         headers: { 'content-type': 'application/json' }
       })
       if(res.ok){
-        const { data } = await res.json();
-        setIsJoinedDiscord(true)
-        console.log(data)
-      }else{
+        const { isMember } = await res.json();
+        if (isMember) {
+          setIsJoinedDiscord(true)
+        } else {
+          // Alert about unsuccsesful verifying
+        }
+      } else {
         const { error } = await res.json();
+        // Alert about unsuccsesful verifying
         console.log(error)
       }
     } catch (error) {
+        // Alert about unsuccsesful verifying
         console.log(error)
     }
   }
@@ -72,15 +77,15 @@ export const DiscordProvider = ({ children }: PropsWithChildren) => {
   const getDiscordUser = async () => {
     const { data } = await supabase.auth.getSession();
     if (data?.session) {
-      setDiscordUser(data?.session.user.user_metadata.full_name as string);
+      const discordUser: {[key: string]: string} | undefined = data?.session.user.identities?.find(x => x.provider === 'discord')?.identity_data
+      if (discordUser) {
+        setDiscordUser(discordUser.full_name);
+      }
     }
   }
 
   useOnMount(() => {
-    getDiscordUser()
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log(event, session)
-    })
+    getDiscordUser();
   })
 
   return (

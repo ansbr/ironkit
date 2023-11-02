@@ -8,13 +8,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   switch (method) {
     case 'POST':
       const { data, error } = await supabase.auth.getUser(req.body.access_token as string);
-      let discordUser = data?.user;
-      console.log(discordUser)
+      let twitterUserId: string | undefined = data?.user?.identities?.find(x => x.provider === 'twitter')?.identity_data?.provider_id;
     
       if (error) {
         res.status(502).json({ error });
       } else {
-        res.status(200).json({ discordUser: discordUser});
+        res.status(200).json({ twitterUserId: twitterUserId });
       }
       break;
     default:

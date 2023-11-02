@@ -4,10 +4,10 @@ import { REST } from '@discordjs/rest';
 import { WebSocketManager } from '@discordjs/ws';
 import { GatewayIntentBits, Client } from '@discordjs/core';
 // Create REST and WebSocket managers directly
-const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
+const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN_BOT!);
 
 const gateway = new WebSocketManager({
-	token: process.env.DISCORD_TOKEN!,
+	token: process.env.DISCORD_TOKEN_BOT!,
 	intents: GatewayIntentBits.GuildMessages | GatewayIntentBits.MessageContent,
 	rest,
 });
@@ -22,8 +22,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   switch (method) {
     case 'POST':
       const { data, error } = await supabase.auth.getUser(req.body.access_token as string);
-      let discordUserId = data?.user?.user_metadata?.provider_id;
-      let guildMember = await discordClient.api.guilds.getMember(process.env.DISCORD_SERVER_ID!, discordUserId);
+      let discordUserId: string | undefined = data?.user?.identities?.find(x => x.provider === 'discord')?.identity_data?.provider_id;
+      let guildMember = discordUserId ? await discordClient.api.guilds.getMember(process.env.DISCORD_SERVER_ID!, discordUserId) : undefined;
     
       if (error) {
         res.status(502).json({ error });

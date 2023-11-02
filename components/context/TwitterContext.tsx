@@ -56,32 +56,37 @@ export const TwitterProvider = ({ children }: PropsWithChildren) => {
         body: JSON.stringify({ access_token: access_token }),
         headers: { 'content-type': 'application/json' }
       })
+
       if(res.ok){
-        const { data } = await res.json();
-        setIsJoinedTwitter(true)
-        console.log(data)
-      }else{
+        const { isMember } = await res.json();
+        if (isMember) {
+          setIsJoinedTwitter(true)
+        } else {
+          // Alert about unsuccsesful verifying
+        }
+      } else {
         const { error } = await res.json();
+        // Alert about unsuccsesful verifying
         console.log(error)
       }
     } catch (error) {
+        // Alert about unsuccsesful verifying
         console.log(error)
     }
   }
 
   const getTwitterUser = async () => {
     const { data } = await supabase.auth.getSession();
-    console.log(data)
     if (data?.session) {
-      setTwitterUser(data?.session.user.user_metadata.full_name as string);
+      const twitterUser: {[key: string]: string} | undefined = data?.session.user.identities?.find(x => x.provider === 'twitter')?.identity_data
+      if (twitterUser) {
+        setTwitterUser(twitterUser.full_name);
+      }
     }
   }
 
   useOnMount(() => {
-    getTwitterUser()
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log(event, session)
-    })
+    getTwitterUser();
   })
 
   return (
