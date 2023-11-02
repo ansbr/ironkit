@@ -32,6 +32,9 @@ export default function Layout({ children }: PropsWithChildren) {
             <li className="nav-item px-1">
               <Link href="/discord" className={`nav-link ${router.pathname == "/discord" ? "active" : ""}`}>Discord</Link>
             </li>
+            <li className="nav-item px-1">
+              <Link href="/twitter" className={`nav-link ${router.pathname == "/twitter" ? "active" : ""}`}>Twitter</Link>
+            </li>
           </ul>
         </div>
       </div>

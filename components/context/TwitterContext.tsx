@@ -3,28 +3,28 @@ import { createClient } from '@supabase/supabase-js'
 import { useOnMount } from "hooks/useOnMount";
 
 // define the props
-type DiscordState = {
-  discordUser: string | undefined;
-  isJoinedDiscord: boolean;
-  verifyJoinDiscord: () => void;
-  signInDiscord: () => void;
+type TwitterState = {
+  twitterUser: string | undefined;
+  isJoinedTwitter: boolean;
+  verifyJoinTwitter: () => void;
+  signInTwitter: () => void;
 };
 
-// 1. create a context with DiscordState and initialize it to null
-export const DiscordContext = createContext<DiscordState>({
-  discordUser: undefined,
-  isJoinedDiscord: false,
-  verifyJoinDiscord: () => {},
-  signInDiscord: () => {}
+// 1. create a context with TwitterState and initialize it to null
+export const TwitterContext = createContext<TwitterState>({
+  twitterUser: undefined,
+  isJoinedTwitter: false,
+  verifyJoinTwitter: () => {},
+  signInTwitter: () => {}
 });
 
-const useDiscord = (): DiscordState => {
+const useTwitter = (): TwitterState => {
   // 2. use the useContext hook
-  const context = useContext(DiscordContext);
+  const context = useContext(TwitterContext);
 
   // 3. Make sure it's not null!
   if (!context) {
-    throw new Error("Please use DiscordProvider in parent component");
+    throw new Error("Please use TwitterProvider in parent component");
   }
 
   return context;
@@ -32,33 +32,33 @@ const useDiscord = (): DiscordState => {
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-export const DiscordProvider = ({ children }: PropsWithChildren) => {
-  const [discordUser, setDiscordUser] = useState<string>();
-  const [isJoinedDiscord, setIsJoinedDiscord] = useState<boolean>(false);
+export const TwitterProvider = ({ children }: PropsWithChildren) => {
+  const [twitterUser, setTwitterUser] = useState<string>();
+  const [isJoinedTwitter, setIsJoinedTwitter] = useState<boolean>(false);
 
-  const signInDiscord = async () => {
+  const signInTwitter = async () => {
     await supabase.auth.signInWithOAuth({ 
-      provider: 'discord',
+      provider: 'twitter',
       options: {
         redirectTo: document.location.href.split('#')[0]
       }
     })
   }
 
-  const verifyJoinDiscord = async () => {
+  const verifyJoinTwitter = async () => {
     const { data } = await supabase.auth.getSession();
     const access_token = data?.session?.access_token;
     if (!access_token) return;
 
     try {
-      const res = await fetch('/api/discord/verify',{
+      const res = await fetch('/api/twitter/verify',{
         method: 'POST',
         body: JSON.stringify({ access_token: access_token }),
         headers: { 'content-type': 'application/json' }
       })
       if(res.ok){
         const { data } = await res.json();
-        setIsJoinedDiscord(true)
+        setIsJoinedTwitter(true)
         console.log(data)
       }else{
         const { error } = await res.json();
@@ -69,27 +69,28 @@ export const DiscordProvider = ({ children }: PropsWithChildren) => {
     }
   }
 
-  const getDiscordUser = async () => {
+  const getTwitterUser = async () => {
     const { data } = await supabase.auth.getSession();
+    console.log(data)
     if (data?.session) {
-      setDiscordUser(data?.session.user.user_metadata.full_name as string);
+      setTwitterUser(data?.session.user.user_metadata.full_name as string);
     }
   }
 
   useOnMount(() => {
-    getDiscordUser()
+    getTwitterUser()
     supabase.auth.onAuthStateChange((event, session) => {
       console.log(event, session)
     })
   })
 
   return (
-    <DiscordContext.Provider value={{ discordUser, signInDiscord, isJoinedDiscord, verifyJoinDiscord }}>
+    <TwitterContext.Provider value={{ twitterUser, signInTwitter, isJoinedTwitter, verifyJoinTwitter }}>
       {children}
-    </DiscordContext.Provider>
+    </TwitterContext.Provider>
   );
 };
 
-export default useDiscord;
+export default useTwitter;
 
 // define the props

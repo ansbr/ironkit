@@ -13,7 +13,7 @@ const gateway = new WebSocketManager({
 });
 
 // Create a client to emit relevant events.
-const client = new Client({ rest, gateway });
+const discordClient = new Client({ rest, gateway });
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -23,7 +23,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     case 'POST':
       const { data, error } = await supabase.auth.getUser(req.body.access_token as string);
       let discordUserId = data?.user?.user_metadata?.provider_id;
-      let guildMember = await client.api.guilds.getMember(process.env.DISCORD_SERVER_ID!, discordUserId);
+      let guildMember = await discordClient.api.guilds.getMember(process.env.DISCORD_SERVER_ID!, discordUserId);
     
       if (error) {
         res.status(502).json({ error });
