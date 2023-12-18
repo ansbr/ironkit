@@ -5,5 +5,5 @@ export const ironOptions: IronSessionOptions = {
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
   },
-  password: process.env.NEXT_IRON_PASSWORD as string,
+  password: process.env.IRON_PASSWORD as string,
 };

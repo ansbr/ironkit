@@ -1,35 +1,47 @@
-import { withIronSessionApiRoute } from 'iron-session/next';
-import { NextApiRequest, NextApiResponse } from 'next';
+export const runtime = 'edge'
+import { unsealData, sealData } from 'iron-session/edge';
+import { NextResponse, NextRequest } from "next/server";
 import { SiweMessage } from 'siwe';
 import { ironOptions } from 'utils/iron';
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+const handler = async (req: NextRequest) => {
   const { method } = req;
-  switch (method) {
-    case 'POST':
-      try {
-        const { message, signature } = req.body;
-        const siweMessage = new SiweMessage(message);
-        const { success, error, data } = await siweMessage.verify({
-          signature,
-        });
 
-        if (!success) throw error;
+  if (method == 'POST') {
+    try {
+      const siwe = req.cookies.get('siwe')?.value
 
-        if (data.nonce !== req.session.nonce)
-          return res.status(422).json({ message: 'Invalid nonce.' });
+      if (!siwe) return NextResponse.json({
+        message: `Invalid session`,
+      }, { status: 422 });
 
-        req.session.siwe = data;
-        await req.session.save();
-        res.json({ ok: true });
-      } catch (_error) {
-        res.json({ ok: false });
-      }
-      break;
-    default:
-      res.setHeader('Allow', ['POST']);
-      res.status(405).end(`Method ${method} Not Allowed`);
+      const { nonce }  = await unsealData(siwe, ironOptions)
+      const { message, signature } = await req.json();
+      const siweMessage = new SiweMessage(message);
+      const { success, error, data } = await siweMessage.verify({
+        signature,
+      });
+
+      if (!success) throw error;
+
+      if (data.nonce !== nonce) return NextResponse.json({
+        message: `Invalid nonce`,
+      }, { status: 422 });
+
+      const res = NextResponse.json({ ok: true });
+      res.cookies.set('siwe', await sealData(data, ironOptions))
+      
+      return res;
+    } catch (_error) {
+      return NextResponse.json({ ok: false })
+    }
   }
+
+  return NextResponse.json({
+    message: `Method ${method} Not Allowed`,
+  }, {
+    status: 405
+  });
 };
 
-export default withIronSessionApiRoute(handler, ironOptions);
+export default handler;

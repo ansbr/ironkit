@@ -1,40 +1,41 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+export const runtime = 'edge'
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js'
-import { REST } from '@discordjs/rest';
-import { WebSocketManager } from '@discordjs/ws';
-import { GatewayIntentBits, Client } from '@discordjs/core';
-// Create REST and WebSocket managers directly
-const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN_BOT!);
-
-const gateway = new WebSocketManager({
-	token: process.env.DISCORD_TOKEN_BOT!,
-	intents: GatewayIntentBits.GuildMessages | GatewayIntentBits.MessageContent,
-	rest,
-});
-
-// Create a client to emit relevant events.
-const discordClient = new Client({ rest, gateway });
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+const handler = async (req: NextRequest) => {
   const { method } = req;
-  switch (method) {
-    case 'POST':
-      const { data, error } = await supabase.auth.getUser(req.body.access_token as string);
-      let discordUserId: string | undefined = data?.user?.identities?.find(x => x.provider === 'discord')?.identity_data?.provider_id;
-      let guildMember = discordUserId ? await discordClient.api.guilds.getMember(process.env.DISCORD_SERVER_ID!, discordUserId) : undefined;
-    
-      if (error) {
-        res.status(502).json({ error });
-      } else {
-        res.status(200).json({ isMember: !!guildMember });
+
+  if (method == 'POST') {
+    const { access_token }: {[key: string]: string} = await req.json()
+    const { data, error } = await supabase.auth.getUser(access_token);
+    let discordUserId: string | undefined = data?.user?.identities?.find(x => x.provider === 'discord')?.identity_data?.provider_id;
+
+    let guildMember: {[key: string]: any} | undefined = undefined;
+
+    const response = await fetch(`https://discord.com/api/v10/guilds/${process.env.DISCORD_SERVER_ID}/members/${discordUserId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bot ${process.env.DISCORD_TOKEN_BOT}`
       }
-      break;
-    default:
-      res.setHeader('Allow', ['POST']);
-      res.status(405).end(`Method ${method} Not Allowed`);
+    });
+
+    guildMember = await response.json();
+  
+    if (error) {
+      return NextResponse.json({ error }, { status: 502 })
+    } else {
+      return NextResponse.json({ isMember: !!guildMember  })
+    }
   }
+  
+  return NextResponse.json({
+    message: `Method ${method} Not Allowed`,
+  }, {
+    status: 405
+  });
 };
 
 export default handler;
